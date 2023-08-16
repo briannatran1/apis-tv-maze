@@ -18,13 +18,16 @@ async function getShowsByTerm(term) {
   const response = await fetch(`${TVMAZE_URL}/search/shows?${params}`);
   const showData = await response.json();
   console.log('showData = ', showData);
-
+  const showDataArray = [];
   for(let i = 0; i < showData.length; i++){
     const {id, name, summary, image} = showData[i].show;
-    // console.log({id, name, summary, image});
+    const extractedShowData = {id, name, summary, image};
+    showDataArray.push(extractedShowData);
+    const {medium} = showData[i].show.image;
+    console.log({medium});
   }
-
-  return showData;
+  console.log(showDataArray);
+  return showDataArray;
 }
 
 
@@ -35,13 +38,14 @@ async function getShowsByTerm(term) {
 
 function displayShows(shows) {
   $showsList.empty();
+  console.log(`shows in displayShows`, shows);
 
   for (const show of shows) {
     const $show = $(`
         <div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
            <img
-              src="http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg"
+              src="${show.image}"
               alt="Bletchly Circle San Francisco"
               class="w-25 me-3">
            <div class="media-body">
@@ -54,9 +58,11 @@ function displayShows(shows) {
          </div>
        </div>
       `);
-
+      // const showParsed = $show.json();
+      // console.log(`showParsed in displayShows`, showParsed);
     $showsList.append($show);
   }
+
 }
 
 
@@ -67,6 +73,7 @@ function displayShows(shows) {
 async function searchShowsAndDisplay() {
   const term = $("#searchForm-term").val();
   const shows = await getShowsByTerm(term);
+  console.log(`shows in seatchShowsAndDisplay`, shows);
 
   $episodesArea.hide();
   displayShows(shows);
