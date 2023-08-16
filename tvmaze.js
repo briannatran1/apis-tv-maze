@@ -17,19 +17,24 @@ async function getShowsByTerm(term) {
   const params = new URLSearchParams({q: term});
   const response = await fetch(`${TVMAZE_URL}/search/shows?${params}`);
   const showData = await response.json();
-  console.log('showData = ', showData);
-  const showDataArray = [];
-  for(let i = 0; i < showData.length; i++){
-    const {id, name, summary, image} = showData[i].show;
-    const extractedShowData = {id, name, summary, image};
-    showDataArray.push(extractedShowData);
-    const {medium} = showData[i].show.image;
-    console.log({medium});
-  }
-  console.log(showDataArray);
-  return showDataArray;
-}
+  const collectedShows = [];
 
+  for(let tvShow of showData){
+    let {id, name, summary, image} = tvShow.show;
+    const extractedShowData = {id, name, summary, image};
+
+    if(image){
+      extractedShowData.image = image.medium;
+    }
+    else{
+      extractedShowData.image = 'https://tinyurl.com/tv-missing'
+    }
+
+    collectedShows.push(extractedShowData);
+  }
+
+  return collectedShows;
+}
 
 /** Given list of shows, create markup for each and append to DOM.
  *
@@ -38,9 +43,9 @@ async function getShowsByTerm(term) {
 
 function displayShows(shows) {
   $showsList.empty();
-  console.log(`shows in displayShows`, shows);
 
   for (const show of shows) {
+    console.log('show =' , show);
     const $show = $(`
         <div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
@@ -73,7 +78,6 @@ function displayShows(shows) {
 async function searchShowsAndDisplay() {
   const term = $("#searchForm-term").val();
   const shows = await getShowsByTerm(term);
-  console.log(`shows in seatchShowsAndDisplay`, shows);
 
   $episodesArea.hide();
   displayShows(shows);
@@ -81,7 +85,7 @@ async function searchShowsAndDisplay() {
 
 $searchForm.on("submit", async function handleSearchForm (evt) {
   evt.preventDefault();
-  await searchShowsAndDisplay();
+  /*await*/ searchShowsAndDisplay();
 });
 
 
