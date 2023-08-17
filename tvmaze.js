@@ -64,8 +64,7 @@ function displayShows(shows) {
          </div>
        </div>
       `);
-      // const showParsed = $show.json();
-      // console.log(`showParsed in displayShows`, showParsed);
+
     $showsList.append($show);
   }
 }
