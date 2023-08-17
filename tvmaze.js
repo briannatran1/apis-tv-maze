@@ -45,7 +45,6 @@ function displayShows(shows) {
   $showsList.empty();
 
   for (const show of shows) {
-    console.log('show =' , show);
     const $show = $(`
         <div data-show-id="${show.id}" class="Show col-md-12 col-lg-6 mb-4">
          <div class="media">
@@ -93,10 +92,29 @@ $searchForm.on("submit", async function handleSearchForm (evt) {
  *      { id, name, season, number }
  */
 
-// async function getEpisodesOfShow(id) { }
+async function getEpisodesOfShow(showId) {
+    const showId = $(".data-show-id").attr();
+    console.log(showId);
+    const episodeParams = new URLSearchParams({showId});
+    const episodeResponse = await fetch(`${TVMAZE_URL}/shows/${episodeParams}/episodes`);
+    const episodeData = await episodeResponse.json();
+    const collectedEpisodes = [];
+    console.log(`episodeResponse`, episodeResponse)
+    console.log(`episodeData`, episodeData)
+ }
 
+ $(".media-body").on("click","button", async function handleSearchForm (evt) {
+  evt.preventDefault();
+  console.log("episode button works");
+
+  // const shows = await getShowsByTerm(term);
+
+  // await getEpisodesOfShow();
+});
 /** Write a clear docstring for this function... */
 
-// function displayEpisodes(episodes) { }
+// function displayEpisodes(episodes) {
+
+//  }
 
 // add other functions that will be useful / match our structure & design
