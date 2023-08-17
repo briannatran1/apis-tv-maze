@@ -84,7 +84,7 @@ async function searchShowsAndDisplay() {
 
 $searchForm.on("submit", async function handleSearchForm (evt) {
   evt.preventDefault();
-  /*await*/ searchShowsAndDisplay();
+  /*await*/ searchShowsAndDisplay(); //do not need await since we don't have to wait for results
 });
 
 
@@ -92,9 +92,15 @@ $searchForm.on("submit", async function handleSearchForm (evt) {
  *      { id, name, season, number }
  */
 
+// perform ajax request to get episode data
+// parse data
+// iterate through data using map and for each ep, return the id, name, season, and number
+
 async function getEpisodesOfShow(showId) {
     const episodeResponse = await fetch(`${TVMAZE_URL}/shows/${showId}/episodes`);
     const episodeData = await episodeResponse.json();
+
+    console.log('episodeData = ', episodeData);
 
     return episodeData.map(ep => ({
       id: ep.id,
@@ -108,6 +114,12 @@ async function getEpisodesOfShow(showId) {
  *
  * An episode is {id, name, season, number}
 */
+
+// empty episodesList area
+// iterate through episodes using for...of loop
+// create a new li for each episode that contains the ep name, season, and number
+// append episode to the episodesList
+// show episodesArea that is currently hidden
 
 function displayEpisodes(episodes) {
   $episodesList.empty();
@@ -140,9 +152,11 @@ async function getEpisodesAndDisplay(showId){
 // - our "discriminant" for this event handler is the class Show-getEpisodes;
 
 $showsList.on('click', '.Show-getEpisodes', async function handleEpisodeClick(evt){
-  // here's one way to get the ID of the show: search "closest" ancestor
-  // with the class of .Show (which is put onto the enclosing div, which
+  // search "closest" ancestor with the class of .Show (which is put onto the enclosing div, which
   // has the .data-show-id attribute).
+  // .data() returns a str so turn id into a num
+  // call getEpisodesAndDisplay function on showId to get list of episodes
+
   const showId = Number($(evt.target).closest('.Show').data('show-id'));
   await getEpisodesAndDisplay(showId);
 });
