@@ -1,9 +1,11 @@
 "use strict";
 
 const $showsList = $("#showsList");
+const $episodesList = $("#episodesList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
 const TVMAZE_URL = 'https://api.tvmaze.com'
+const MISSING_IMAGE_URL = 'https://tinyurl.com/tv-missing'
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -27,7 +29,7 @@ async function getShowsByTerm(term) {
       extractedShowData.image = image.medium;
     }
     else{
-      extractedShowData.image = 'https://tinyurl.com/tv-missing'
+      extractedShowData.image = MISSING_IMAGE_URL;
     }
 
     collectedShows.push(extractedShowData);
@@ -50,7 +52,7 @@ function displayShows(shows) {
          <div class="media">
            <img
               src="${show.image}"
-              alt="Bletchly Circle San Francisco"
+              alt="${show.name}"
               class="w-25 me-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
@@ -66,9 +68,7 @@ function displayShows(shows) {
       // console.log(`showParsed in displayShows`, showParsed);
     $showsList.append($show);
   }
-
 }
-
 
 /** Handle search form submission: get shows from API and display.
  *    Hide episodes area (that only gets shown if they ask for episodes)
@@ -93,28 +93,57 @@ $searchForm.on("submit", async function handleSearchForm (evt) {
  */
 
 async function getEpisodesOfShow(showId) {
-    const showId = $(".data-show-id").attr();
-    console.log(showId);
-    const episodeParams = new URLSearchParams({showId});
-    const episodeResponse = await fetch(`${TVMAZE_URL}/shows/${episodeParams}/episodes`);
+    const episodeResponse = await fetch(`${TVMAZE_URL}/shows/${showId}/episodes`);
     const episodeData = await episodeResponse.json();
-    const collectedEpisodes = [];
-    console.log(`episodeResponse`, episodeResponse)
-    console.log(`episodeData`, episodeData)
+
+    return episodeData.map(ep => ({
+      id: ep.id,
+      name: ep.name,
+      season: ep.season,
+      number: ep.number
+    }));
  }
 
- $(".media-body").on("click","button", async function handleSearchForm (evt) {
-  evt.preventDefault();
-  console.log("episode button works");
+/** Given a list of episodes, create list item for each and append to the DOM.
+ *
+ * An episode is {id, name, season, number}
+*/
 
-  // const shows = await getShowsByTerm(term);
+function displayEpisodes(episodes) {
+  $episodesList.empty();
 
-  // await getEpisodesOfShow();
-});
-/** Write a clear docstring for this function... */
+  for(const episode of episodes){
+    const $episode = $(
+      `<li>
+        ${episode.name}
+        (season ${episode.season}, episode ${episode.number})
+        </li>`
+    );
 
-// function displayEpisodes(episodes) {
+    $episodesList.append($episode);
+  }
 
-//  }
+  $episodesArea.show();
+}
 
 // add other functions that will be useful / match our structure & design
+
+/** Handle click on episodes button: get episodes for show and display */
+
+async function getEpisodesAndDisplay(showId){
+  const episodes = await getEpisodesOfShow(showId);
+  displayEpisodes(episodes);
+}
+
+// - we're using "event delegation", since the buttons *won't exist* on page
+//   load, only after they've search for shows
+// - our "discriminant" for this event handler is the class Show-getEpisodes;
+
+$showsList.on('click', '.Show-getEpisodes', async function handleEpisodeClick(evt){
+  // here's one way to get the ID of the show: search "closest" ancestor
+  // with the class of .Show (which is put onto the enclosing div, which
+  // has the .data-show-id attribute).
+  const showId = Number($(evt.target).closest('.Show').data('show-id'));
+  await getEpisodesAndDisplay(showId);
+});
+
